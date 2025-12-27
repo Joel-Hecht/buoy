@@ -1,0 +1,31 @@
+buoy - like vim marks for the filesystem
+
+This is a project to experiment with systems programming and daemon creation in janet, using janets built in c ffi.
+We create a way to make and save filesystem locations without clogging the environment variable space and with quicker syntax, that save between terminals and shutdowns.
+The program is build to save a few seconds here and there and does not pose much advantage over environment variables, it is mainly an excercise to practice using janet.
+
+
+On bashrc, check if buoy-master process file exists, if so get the input and output streams. (this will not be concurrency safe)
+if it is not, call the janet script buoy-controller, which will create the input and output streams, write them to a file, and create a subprocess detached from the terminal
+	this subprocess will read in the existing buoys json, and then wait for stdin
+	on stdin, it will replace all buoy tags with the value of the buoy and return the command with all keys substituted out.  Use build in cmd arg parsing
+		-say we have a seperate stream for buoy creation (can we block on two streams??).  On buoy creation, we will check to see if buoy path is valid, if not send error on output stream
+		-It should also check that the bouy string does not begin with a character that must be escaped in bash (i.e. first character is in [a-zA-Z0-9,._+:@%/-] ).  Since we are going to specify buoy strings with backslash when they are dereferenced, we will want to make sure that this does not conflict with the bash defaults, where such characters would need to be escaped.  note that newlines can also be escaped, which we should handle, but it is really not the use case of this program (use environment variables instead, this program only saves a few seconds).
+		- if is valid, check to see if key is in table already.  If no, append key to table.  If yes, prompt for override (communicate back and fourth once more on output streams)
+		- after any table update, write the table back into memory (/usr/bin if i'm good, else just do it in a .janet) 
+
+when using a buoy, would use cmd to parse all args (we would only get a string on input stream, but should parse as args incase of escaped characters/quotes )
+
+-may be smart to have a buoy-update and a buoy-substitute process which each manage different input/output streams and then relay results to the parent process
+	-Making this concurrency safe could then be difficult, I would have to add mutexes and have all the processes spawn from a single file, which would fork several times.
+
+-Ideally this would run as a daemon, which may be possible using janets C FFI
+	-this would remove the need for
+
+
+buoy -l (list)
+buoy -m (make)
+buoy -e (execute with buoys)
+
+I would alias to lb, mb, and eb respectively
+and c for cd to mark
