@@ -37,37 +37,46 @@
 )
 
 # make named pipe with full permissions, @name should be a path in /tmp 
-(defn make-pipe [name] 
-	#ideally this would also check if the file is a pipe and not just some random thing
-	(if (os/stat name )
-		#remove existing pipe and replace with our own.  Effectively clearing the buffer
-		(os/rm name )
-	)
-	($ mkfifo ,name ) #needs to be run as user, not as root so we can change permissions later
-	# this doesnt work because it is blocking - if we could add a timeout or make it continue if there is no data immediately availible this would be perfect
-	#(read-from-pipe name )# flush the pipe
+(defn make-socket [name] 
+	#on linux we could use abstract uds but don't want to in case i have to use these on mingw at work (involves kernel)
+	#(net/connect :unix name) #client
+
+	(when (os/stat name) (os/rm name))
+
+	(def sock (net/listen :unix name))
+
 	(os/chmod name 8r777) #For some reason pipes made from janet don't have default /tmp/ permissions
+	sock
 )
 
-(defn server-loop [inpipe outpipe]
+(defn server-loop [sockname]
 
 	(def buf @"")
 	
+	(print "server loop started")
+	(def sock (make-socket sockname) )
+
 	(forever
-		(buffer/push-string buf (read-from-pipe inpipe))
-		(print (string "sending: " buf) )
-		(write-to-pipe outpipe buf)
+		#wait for client
+		(def connection (net/accept sock ))
+		(defer (:close connection)
+			(buffer/push-string buf (net/read connection 1024) )
+			(print buf)
+			(net/write connection buf )
+		)	
+		
+
+	# 	(buffer/push-string buf (read-from-pipe inpipe))
+	# 	(print (string "sending: " buf) )
+	# 	(write-to-pipe outpipe buf)
 	)
 
 )
 
 #main routine
 
-(def inpipe "/tmp/janet-in")
-(def outpipe "/tmp/janet-out")
+(def makesockname "/tmp/buoy-maker.socket")
+(def subsockname "/tmp/buoy-substitute.socket")
 
-#make named pipes
-(make-pipe inpipe)
-(make-pipe outpipe)
-
-(server-loop inpipe outpipe)
+(ev/go |(server-loop makesockname )  )
+(ev/go |(server-loop subsockname ) )

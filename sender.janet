@@ -4,38 +4,53 @@
 
 #assume the server has already created these pipes
 
-(defn read-from-pipe [pipe_name] 
-	#refactor to use with
-	(def read-pipe (file/open pipe_name :r ))
-	(def data (:read read-pipe :all))
-	(:close read-pipe)
-	data
+(defn usage [status] 
+	(print "Usage: \tbuoy -e <command> \n\tbuoy [-m | -c] <string>")
+	#put more usage stuff here	
+	(os/exit status ) 
 )
 
-(defn write-to-pipe [pipe_name data] 
-	#could refactor to use with
-	(def write-pipe (file/open pipe_name :w ))
-	(:write write-pipe data)
-	(:flush write-pipe)
-	(:close write-pipe)
-)
-
-(defn sender-loop [outpipe inpipe] 
+(defn client-loop [ msg sockname ] 
 
 	#blocks, we cant create read pipe until there is data on the other side
 	#in other words, this blocks until we have a writer
 	#(var read-pipe (file/open "/tmp/janet-out" :r ) )
 	#(def write-pipe (file/open outpipe :w ) )
 
-	(for i 0 4
-		(write-to-pipe outpipe "sdfsfsdf\n")
-		(print (read-from-pipe inpipe ))
+	(def connection (net/connect :unix sockname))
+	(net/write connection msg )
+	(print (net/read connection 1024))	
+)
+
+(defn prepare-and-send [argsarray sock] 
+	
+		#remove $0 and flag
+		(var command-array (array/slice argsarray 2 ) )
+		#all backslashes become double backslashes, so it is impossible for
+		#the new string to contain " \ "
+		(set command-array (map (fn [x] (string/replace-all "\\" "\\\\" x )) command-array )   )
+		(def command-joined (string/join command-array " \\ "))
+	
+		#\\e will indicate the end of the message
+		(client-loop (string command-joined " \\e" )  sock)
+
+)
+
+#not robust option checking because i suck
+(defn checkopt [msock esock] 
+	(let [args (dyn :args)]
+		(case (get args 1)
+			"-m" (prepare-and-send args msock )
+			"-e" (prepare-and-send args esock )
+			"-c" (usage 0) #unimplemented as of yet
+			"-h" (usage 0)
+			(usage 1) # got nothing
+		)
 	)
 )
 
-(def send "/tmp/janet-in")
-(def recv "/tmp/janet-out")
+(def msock "/tmp/buoy-maker.socket")
+(def esock "/tmp/buoy-substitute.socket")
 
-(sender-loop send recv)
-
+(checkopt msock esock )
 
