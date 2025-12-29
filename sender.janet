@@ -31,16 +31,50 @@
 		(set command-array (map (fn [x] (string/replace-all "\\" "\\\\" x )) command-array )   )
 		(def command-joined (string/join command-array " \\ "))
 	
-		#\\e will indicate the end of the message
-		(client-loop (string command-joined " \\e" )  sock)
+		#\\e will indicate the end of the message as the last arg being \e
+		#(client-loop (string command-joined " \\ \\e" )  sock)
+		#disable end flag logic for now, lets just assume all commands are under a certain size for now
+		(client-loop command-joined sock)
 
 )
+
+
+(defn makebuoywrapper [args sock]
+	#this function will check that a make command (buoy -m) has a key that fulfills the criteria
+	#(def validpeg (regex/compile "^[a-zA-Z0-9,._+:@%/-]*$" ) )
+	(def validpeg
+		#pegs are always anchored at the beginning of the input, so there is no way to specify ^ or $
+		(peg/compile 
+			'(sequence
+				(any 
+					(choice 
+						(set ",._+:%-" ) #notably, @ and / are excluded
+						(range "az" "AZ" "09" )
+					)
+				)
+				-1 #asserts that there is no input left, like $
+			)
+		)
+	)
+
+	(if (>= (length args) 3) 
+		(do 
+			(def buoy-key (get args 2 ) )
+			(if (peg/match validpeg buoy-key )
+				(prepare-and-send args sock )
+				(string "echo \"Error: key " buoy-key " contains special characters.  Please use a different key\" >&2")
+			)
+		)
+		(string "echo \"Error: No Buoy Key Provided\" >&2 ")
+	)
+)
+
 
 #not robust option checking because i suck
 (defn checkopt [msock esock] 
 	(let [args (dyn :args)]
 		(case (get args 1)
-			"-m" (prepare-and-send args msock )
+			"-m" (makebuoywrapper args msock )
 			"-e" (prepare-and-send args esock )
 			"-c" (usage 0) #unimplemented as of yet
 			"-h" (usage 0)
@@ -52,5 +86,5 @@
 (def msock "/tmp/buoy-maker.socket")
 (def esock "/tmp/buoy-substitute.socket")
 
-(checkopt msock esock )
+(print (checkopt msock esock ))
 

@@ -89,7 +89,6 @@
 		)	
 		#without @, it is the users responsibility to do the escaping
 		(array/push out truearg) 
-		
 	)
 		
 	# return args joined as a statement
@@ -97,7 +96,7 @@
 )
 
 
-(defn server-loop [sockname]
+(defn server-loop [sockname func ]
 
 	(var buf @"")
 	
@@ -109,7 +108,7 @@
 		(def connection (net/accept sock ))
 		(defer (:close connection)
 			(set buf (net/read connection 1024) )
-			(print (substitute buf))
+			(print (func buf))
 			#(buffer/push-string buf (net/read connection 1024) )
 			#(print buf)
 			(net/write connection buf )
@@ -117,10 +116,14 @@
 	)
 )
 
+(defn dummy [x] 
+	(string "dummy" )
+)
+
 #main routine
 
 (def makesockname "/tmp/buoy-maker.socket")
 (def subsockname "/tmp/buoy-substitute.socket")
 
-(ev/go |(server-loop makesockname )  )
-(ev/go |(server-loop subsockname ) )
+(ev/go |(server-loop makesockname dummy )  )
+(ev/go |(server-loop subsockname substitute ) )
