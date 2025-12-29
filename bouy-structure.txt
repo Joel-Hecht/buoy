@@ -29,3 +29,12 @@ buoy -e (execute with buoys)
 
 I would alias to lb, mb, and eb respectively
 and c for cd to mark
+
+
+
+structure is ambiguous:
+	cd as \| sdfds df\ sd\ d  \&&
+		goes to cd as | sdfds "df sd d" &&	
+	echo \\| \| 
+		this will print the pipe and then pipe it to some other process.
+Printing these characters will require double escaping  
