@@ -1,0 +1,8 @@
+[Unit]
+Description=Manages Buoy Table for quicker filesystem aliases
+[Service]
+ExecStart=/usr/local/bin/buoy-server
+#Install after system has finished booting
+[Install]
+#no multi-user.target for --user daemons, need to use default.target even though not recommended
+WantedBy=default.target
