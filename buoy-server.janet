@@ -240,8 +240,11 @@
 
 (defn main [& args] 
 
-	(def makesockname "/tmp/buoy-maker.socket")
-	(def subsockname "/tmp/buoy-substitute.socket")
+	(def socketdir (string (os/getenv "XDG_RUNTIME_DIR") "/buoy/") )
+	(os/mkdir socketdir)
+
+	(def makesockname (string socketdir "buoy-maker.socket" ) )
+	(def subsockname (string socketdir "buoy-substitute.socket" ) )
 
 	#make channels for communicating with the table manager
 	(def make-in (ev/chan 5 ) )

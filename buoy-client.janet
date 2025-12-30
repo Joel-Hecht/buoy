@@ -103,8 +103,11 @@
 )
 
 (defn main [& args]
-	(def msock "/tmp/buoy-maker.socket")
-	(def esock "/tmp/buoy-substitute.socket")
+	
+	(def socketdir (string (os/getenv "XDG_RUNTIME_DIR") "/buoy/") )
+
+	(def msock (string socketdir "buoy-maker.socket" ) )
+	(def esock (string socketdir "buoy-substitute.socket" ) )
 
 	#don't pass in args, janet lets us get the args at any time via (dyn :args)
 	(print (checkopt msock esock))
