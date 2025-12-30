@@ -5,7 +5,7 @@
 #assume the server has already created these pipes
 
 (defn usage [status] 
-	(print "Usage: \tbuoy -e <command> \n\tbuoy [-m | -c] <string>")
+	(print "echo -e \"buoy: usage: \\tbuoy -e <command> \\n\\t\\tbuoy [-m | -c] <string>\"")
 	#put more usage stuff here	
 	(os/exit status ) 
 )
@@ -81,13 +81,12 @@
 			(def buoy-key (get args 2 ) )
 			(if (peg/match validpeg buoy-key )
 				(make-get-value-wrapper args sock )
-				(string "echo \"Error: key " buoy-key " contains special characters.  Please use a different key\" >&2")
+				(string "echo \"buoy: key " buoy-key " contains special characters.  Please use a different key\" >&2")
 			)
 		)
-		(string "echo \"Error: No Buoy Key Provided\" >&2 ")
+		(string "echo \"buoy: No Buoy Key Provided\" >&2 ")
 	)
 )
-
 
 #not robust option checking because i suck
 (defn checkopt [msock esock] 

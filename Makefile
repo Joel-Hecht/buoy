@@ -1,17 +1,20 @@
 .PHONY: all
-all: 
+all: exe daemon
+
+.PHONY: exe
+exe: buoy-server.janet buoy-client.janet 
 	sudo jpm deps
 	jpm build
 	mkdir -p "${HOME}/.buoy/bin"
 	sudo cp "build/buoy-client" "/usr/local/bin/"
 	sudo cp "build/buoy-server" "/usr/local/bin/"
-	#systemd stuff
+
+.PHONY: daemon
+daemon: buoy-server.service
 	mkdir -p "${HOME}/.config/systemd/user"
 	cp buoy-server.service "${HOME}/.config/systemd/user"
 	systemctl --user enable buoy-server #set to launch on boot
 	systemctl --user start buoy-server #launch right now!
-	#bashrc stuff
-	
 	
 # will not remove anything from bashrc
 .PHONY: clean
