@@ -1,11 +1,7 @@
 #!/usr/local/bin/janet
 
-
-
 (use sh)
 (import spork/json)
-
-
 
 # make a socket with full permissions, @name should be a path in /tmp 
 (defn make-socket [name] 
@@ -16,7 +12,8 @@
 
 	(def sock (net/listen :unix name))
 
-	(os/chmod name 8r777) #For some reason pipes made from janet don't have default /tmp/ permissions
+	#($ chmod 1777 ,name ) #enable sticky bit, should be implicit
+	#(os/chmod name 8r1777) 
 	sock
 )
 
