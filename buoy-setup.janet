@@ -10,6 +10,7 @@
 #in the future, I should configure a project.janet that works to compile this file with deps
 #(import sh)
 (use sh)
+(import spork/json)
 
 #stupid unnamed pipes
 #these are bound to this jaet event loop, and are not storeed on disk (other processes can't access)
@@ -61,7 +62,7 @@
 	($< printf %q ,arg )
 )
 
-(defn substitute [argstring]
+(defn substitute [argstring send recv ]
 	#argument delimiter created by sending routine
 	(var args (string/split " \\ " argstring))
 	(def out @[])
@@ -96,7 +97,7 @@
 )
 
 
-(defn server-loop [sockname func ]
+(defn server-loop [sockname func send-chan recv-chan ]
 
 	(var buf @"")
 	
@@ -108,22 +109,103 @@
 		(def connection (net/accept sock ))
 		(defer (:close connection)
 			(set buf (net/read connection 1024) )
-			(print (func buf))
-			#(buffer/push-string buf (net/read connection 1024) )
-			#(print buf)
-			(net/write connection buf )
+
+			#Send back the result of the operation
+			(net/write connection (func buf send-chan recv-chan ) )
 		)	
 	)
 )
 
-(defn dummy [x] 
-	(string "dummy" )
+(defn addkey [ argstring send recv ]
+	(var args (string/split " \\ " argstring))
+
+	#2 args enforced by client routine
+	#(def t {:key (get args 0 ) :value (get args 1) } )
+	(ev/give send args)
+
+	# return the string from table manager, which
+	# is an exceutable (evaluatable) bash script
+	(ev/take recv)
 )
+
+(defn decode-json-if-exists [fname]
+	(var t @{})
+	(when (os/stat fname) 
+		(set t
+			(json/decode (slurp fname ) )
+		)
+	)
+	t	
+)
+
+(defn write-json-to-file  [t fname]
+	(with [f (file/open fname :w ) ] 
+		(file/write f 
+			(json/encode t "" "\n" )
+		)
+	)
+)
+
+(defn table-manager [make-recv make-send sub-recv sub-send ]
+	(def datadir (string (os/getenv "HOME" ) "/.local/share/buoy/" ) )
+	(def tablepath (string datadir "buoytable.json" ))
+	(os/mkdir datadir) #would return falso if dir already exists
+
+	(var buoys (decode-json-if-exists tablepath ) )	
+
+	(forever
+		#table of form {:key k :value v}
+		(var item (ev/take make-recv ) )
+		(def newkey (get item 0 ) )
+		(def newvalue (get item 1 ) )
+
+		(var return-msg 
+			(string 
+				"echo \" Successfully added key @"
+				newkey
+				" with value " 
+				newvalue
+				" to table\"" 
+			) 
+		)
+		
+		(when (get buoys newkey)
+			(set return-msg
+				(string
+					"echo \" Warning: key @"
+					newkey
+					" already exists. Replaced old value ("
+					(get buoys newkey)
+					") with new value ("
+					newvalue
+					")\""
+				)
+			)
+		)
+
+
+		#(put item :value (escape-string (get item :value) ) )
+		(put buoys (get item 0 ) (escape-string (get item 1 ) ) )
+
+		# write table to filesystem
+		(write-json-to-file buoys tablepath )
+		
+		#return string indicating success status
+		(ev/give make-send return-msg)	
+	)	
+)	
 
 #main routine
 
 (def makesockname "/tmp/buoy-maker.socket")
 (def subsockname "/tmp/buoy-substitute.socket")
 
-(ev/go |(server-loop makesockname dummy )  )
-(ev/go |(server-loop subsockname substitute ) )
+#make channels for communicating with the table manager
+(def make-in (ev/chan 5 ) )
+(def make-out (ev/chan 5) )
+(def sub-in (ev/chan 5 ) )
+(def sub-out (ev/chan 5) )
+
+(ev/go |(server-loop makesockname addkey make-in make-out )  )
+(ev/go |(server-loop subsockname substitute sub-in sub-out ) )
+(ev/go |(table-manager make-in make-out sub-in sub-out ) ) 
