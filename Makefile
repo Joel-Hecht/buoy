@@ -1,5 +1,5 @@
 .PHONY: all
-all: exe daemon bashfunction
+all: exe daemon wrapper
 
 .PHONY: exe
 exe: src/buoy-server.janet src/buoy-client.janet 
@@ -16,8 +16,8 @@ daemon: systemd/buoy-server.service
 	systemctl --user enable buoy-server #set to launch on boot
 	systemctl --user start buoy-server #launch right now!
 
-.PHONY: bashfunction
-bashfunction: scripts/buoy-interface.sh scripts/bashrc-install.sh
+.PHONY: wrapper
+wrapper: scripts/buoy-interface.sh scripts/bashrc-install.sh
 	mkdir -p "${HOME}/.local/share/buoy/"	
 	cp "scripts/buoy-interface.sh" "${HOME}/.local/share/buoy/"	
 	#add line in bashrc sourcing this function
