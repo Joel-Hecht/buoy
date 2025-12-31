@@ -13,15 +13,16 @@ The buoy table will run as a daemon, and will be updated and accessed by the fol
 ```
 $ buoy -m a 
 ```
- - You may also make a buoy to a path or file under the current directory by specifying the path after the buoy name ```$ buoy -m a file.txt```
- - Buoy names must only contain characters that meet the regex `^[a-zA-Z0-9,._+:%-]*$`.  That is, and character that is NOT a bash metacharacter, with the exception of `@` (the buoy dereference operator - more on this later) and `/` (as we allow filepaths to continue after dereferenced buoys and need to avoid ambiguity).
+  - You may also make a buoy to a path or file under the current directory by specifying the path after the buoy name ```$ buoy -m a file.txt```
+  - Buoy names must only contain characters that meet the regex `^[a-zA-Z0-9,._+:%-]*$`.  That is, and character that is NOT a bash metacharacter, with the exception of `@` (the buoy dereference operator - more on this later) and `/` (as we allow filepaths to continue after dereferenced buoys and need to avoid ambiguity).
+
 
 [e]xecute a command, substituting all buoys (dereferenced using @) for their paths
 ```
 $ buoy -e cd @a
 ```
- - See [Avoiding Ambiguitiy](#avoiding-ambiguity) for more details on usage
- - You may also use filepaths in the subtree of a buoy by continuing after the buoy.  Note that bash does not know what buoys are, so autocomplete can't help you here ```$ buoy -e cat @a/file.txt```
+  - See [Avoiding Ambiguitiy](#avoiding-ambiguity) for more details on usage
+  - You may also use filepaths in the subtree of a buoy by continuing after the buoy.  Note that bash does not know what buoys are, so autocomplete can't help you here ```$ buoy -e cat @a/file.txt```
 
 <!--
 [l]ist the buoy table to stdout
@@ -34,7 +35,7 @@ Shortcut to quickly [c]d to a buoy.  No derefernce operator needed.
 ```
 $ buoy -c a
 ```
- - Also works with directories in the subtree of a buoy ```buoy -c a/dir```
+  - Also works with directories in the subtree of a buoy ```buoy -c a/dir```
 
 
 ## Avoiding Ambiguity
@@ -59,7 +60,7 @@ The program is written in janet, and requires the janet / jpm to compile.  It de
 
 ## Building
 
-The makefile is configured to run the program, install in systemd, and add a function to evaluate output in current terminal, run 
+The makefile is configured to run the program, install in systemd, and add a function to evaluate output in current terminal. Run make for full setup. 
 ```
 $ make
 ```
