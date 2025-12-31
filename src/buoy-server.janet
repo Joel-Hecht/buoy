@@ -168,10 +168,11 @@
 			(def args (ev/take sub-recv))
 			(def out @[])
 
+			(var errorstatus false)
+			(var errorstring "")
+
 			(each arg args
 				#error status variables that we will check at the end of the run
-				(var errorstatus false)
-				(var errorstring "")
 
 				# check if we have asked for an arg
 				(var outarg arg)
@@ -229,7 +230,10 @@
 			)
 			
 			# return args joined as an expression
-			(ev/give sub-send (string/join out " ") )
+			# If we error out, be careful not to add more than one thing to the output channel
+			(when (not errorstatus)
+				(ev/give sub-send (string/join out " ") )
+			)
 			
 		)	
 	)
