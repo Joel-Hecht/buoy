@@ -9,19 +9,19 @@ The buoy table will run as a daemon, and will be updated and accessed by the fol
 
 ## Usage
 
-- [m]ake a buoy named 'a' to the current directory
+[m]ake a buoy named 'a' to the current directory
 ```
 $ buoy -m a 
 ```
  - You may also make a buoy to a path or file under the current directory by specifying the path after the buoy name ```$ buoy -m a file.txt```
  - Buoy names must only contain characters that meet the regex `^[a-zA-Z0-9,._+:%-]*$`.  That is, and character that is NOT a bash metacharacter, with the exception of `@` (the buoy dereference operator - more on this later) and `/` (as we allow filepaths to continue after dereferenced buoys and need to avoid ambiguity).
 
-- [e]xecute a command, substituting all buoys (dereferenced using @) for their paths
+[e]xecute a command, substituting all buoys (dereferenced using @) for their paths
 ```
-buoy -e cd @a
+$ buoy -e cd @a
 ```
  - See [Avoiding Ambiguitiy](#avoiding-ambiguity) for more details on usage
- - You may also use filepaths in the subtree of a buoy by continuing after the buoy.  Note that bash does not know what buoys are, so autocomplete can't help you here ``` buoy -e cat @a/file.txt```
+ - You may also use filepaths in the subtree of a buoy by continuing after the buoy.  Note that bash does not know what buoys are, so autocomplete can't help you here ```$ buoy -e cat @a/file.txt```
 
 <!--
 [l]ist the buoy table to stdout
@@ -32,7 +32,7 @@ buoy -l
 
 Shortcut to quickly [c]d to a buoy.  No derefernce operator needed.
 ```
-buoy -c a
+$ buoy -c a
 ```
  - Also works with directories in the subtree of a buoy ```buoy -c a/dir```
 
@@ -71,17 +71,17 @@ $ make exe
 
 To daemonize using systemd (and configure to boot on startup), run:
 ```
-make daemon
+$ make daemon
 ```
 
 To add the bash wrapper to automatically eval output from the buoy-client, run:
 ```
-make wrapper
+$ make wrapper
 ```
 
 To remove all installed files (this will not clear the managed section of your bashrc), run:
 ```
-make clean
+$ make clean
 ```
 
 ## Purpose
