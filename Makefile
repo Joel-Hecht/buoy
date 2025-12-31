@@ -24,7 +24,7 @@ wrapper: scripts/buoy-interface.sh scripts/bashrc-install.sh
 	bash "scripts/bashrc-install.sh"
 
 .PHONY: update
-update:
+update: clean-save-data
 	git pull
 	@$(MAKE) all
 

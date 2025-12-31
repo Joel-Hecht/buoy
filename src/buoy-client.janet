@@ -107,7 +107,8 @@
 (defn send-cd [args sock]
 	(if (>= (length args ) 3 ) 
 		(prepare-and-send [ "dummy" "dummy" "cd" (string "@" (get args 2) ) ] sock)
-		(string "echo \"buoy: can't cd to nowhere!\" >&2 ")
+		#if no args, cd to home directory
+		(string "cd")
 	)
 )
 
