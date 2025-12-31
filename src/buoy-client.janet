@@ -1,5 +1,7 @@
 #!/usr/local/bin/janet
 
+(import ./connection-tools :as nettools)
+
 #this routine will send data and then read from other pipe
 
 #assume the server has already created these pipes
@@ -18,8 +20,14 @@
 	#(def write-pipe (file/open outpipe :w ) )
 
 	(def connection (net/connect :unix sockname))
-	(net/write connection msg )
-	(print (net/read connection 1024))	
+	
+	(def managed-connection (nettools/make-connectionManager connection) )
+	
+	#(net/write connection msg )
+	(:sendManaged managed-connection msg)
+
+	(print (:acceptManaged managed-connection ) )
+	#(print (net/read connection 1024))	
 )
 
 (defn prepare-and-send [argsarray sock] 

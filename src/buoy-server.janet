@@ -2,6 +2,7 @@
 
 (use sh)
 (import spork/json)
+(import ./connection-tools :as nettools)
 
 # make a socket with full permissions, @name should be a path in /tmp 
 (defn make-socket [name] 
@@ -63,17 +64,19 @@
 
 	(var buf @"")
 	
-	(print "server loop started")
 	(def sock (make-socket sockname) )
 
 	(forever
 		#wait for client
 		(def connection (net/accept sock ))
 		(defer (:close connection)
-			(set buf (net/read connection 1024) )
+			(def managed-connection (nettools/make-connectionManager connection) )
+			#(set buf #(net/read connection 1024) )
+			(set buf (:acceptManaged managed-connection ) )
 
 			#Send back the result of the operation
-			(net/write connection (func buf send-chan recv-chan ) )
+			(:sendManaged managed-connection (func buf send-chan recv-chan ) ) 			
+			#(net/write connection (func buf send-chan recv-chan ) )
 		)	
 	)
 )
