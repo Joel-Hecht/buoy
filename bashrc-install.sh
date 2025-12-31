@@ -8,4 +8,15 @@ if cat "${HOME}/.bashrc" | grep -qe "^${cmd}$"; then
 else
 	echo "Appending source call to buoy function in bashrc"
 	echo "${cmd}" >> "${HOME}/.bashrc"
+	cat <<EOF >> "${HOME}/.bashrc"
+
+# >>>>> source file for buoy >>>>>
+
+# !! Contents within this block are managed by buoy
+
+${cmd}
+
+# <<<<< source file for buoy <<<<<
+
+EOF
 fi
