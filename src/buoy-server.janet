@@ -231,7 +231,7 @@
 			
 			# return args joined as an expression
 			# If we error out, be careful not to add more than one thing to the output channel
-			(when (not errorstatus)
+			(if (not errorstatus)
 				(ev/give sub-send (string/join out " ") )
 			)
 			
