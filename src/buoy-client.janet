@@ -7,7 +7,7 @@
 #assume the server has already created these pipes
 
 (defn usage [status] 
-	(print "echo -e \"buoy: usage: \\tbuoy -e <command> \\n\\t\\tbuoy [-m | -c] <string>\"")
+	(print "echo -e \"buoy: usage: \\tbuoy -e <command> \\n\\t\\tbuoy [-m | -c] <string>\" >&2 ")
 	#put more usage stuff here	
 	(os/exit status ) 
 )
@@ -96,8 +96,19 @@
 	)
 )
 
+(defn sub-check-has-args-wrapper [args sock]
+	#make sure we have at least one function to operate on, or else output will just be empty string which is undefined behavior
+	(if (>= (length args ) 3 )
+		(prepare-and-send args sock)	
+		(string "echo \"buoy: No command to evaluate\" >&2 ")	
+	)
+)
+
 (defn send-cd [args sock]
-	(prepare-and-send [ "dummy" "dummy" "cd" (string "@" (get args 2) ) ] sock)
+	(if (>= (length args ) 3 ) 
+		(prepare-and-send [ "dummy" "dummy" "cd" (string "@" (get args 2) ) ] sock)
+		(string "echo \"buoy: can't cd to nowhere!\" >&2 ")
+	)
 )
 
 #not robust option checking because i suck
@@ -105,7 +116,7 @@
 	(let [args (dyn :args)]
 		(case (get args 1)
 			"-m" (make-check-valid-key-wrapper args msock )
-			"-e" (prepare-and-send args esock )
+			"-e" (sub-check-has-args-wrapper args esock )
 			"-c" (send-cd args esock)
 			"-h" (usage 0)
 			(usage 1) # got nothing

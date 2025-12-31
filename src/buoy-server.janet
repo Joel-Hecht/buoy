@@ -209,7 +209,7 @@
 										(do
 											(set errorstatus true)
 											(set errorstring 
-												(string "echo \"Error: No key @" buoyname " found in table \" >&2")
+												(string "echo \"buoy: No key @" buoyname " found in table \" >&2")
 											)
 										)
 									)
