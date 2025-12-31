@@ -105,11 +105,7 @@
 )
 
 (defn send-cd [args sock]
-	(if (>= (length args ) 3 ) 
-		(prepare-and-send [ "dummy" "dummy" "cd" (string "@" (get args 2) ) ] sock)
-		#if no args, cd to home directory
-		(string "cd")
-	)
+	(prepare-and-send [ "dummy" "dummy" "cd" (string "@" (get args 2) ) ] sock)
 )
 
 #not robust option checking because i suck

@@ -15,6 +15,9 @@ $ buoy -m a
 ```
   - You may also make a buoy to a path or file under the current directory by specifying the path after the buoy name ```$ buoy -m a file.txt```
   - Buoy names must only contain characters that meet the regex `^[a-zA-Z0-9,._+:%-]*$`.  That is, and character that is NOT a bash metacharacter, with the exception of `@` (the buoy dereference operator - more on this later) and `/` (as we allow filepaths to continue after dereferenced buoys and need to avoid ambiguity).
+ - Reserved Buoy Names:
+   - The empty buoy is reserved to point to your $HOME directory, and cannot be changed.
+   - The `@` buoy is reserved as an escape shortcut for strings.  See [Avoiding Ambiguitiy](#avoiding-ambiguity) for more details.
 
 
 [e]xecute a command, substituting all buoys (dereferenced using @) for their paths
@@ -36,6 +39,7 @@ Shortcut to quickly [c]d to a buoy.  No derefernce operator needed.
 $ buoy -c a
 ```
   - Also works with directories in the subtree of a buoy ```buoy -c a/dir```
+  - Using `buoy -c` as is with no additional arguments will use the empty buoy, which will send you to the HOME directory.
 
 
 ## Avoiding Ambiguity

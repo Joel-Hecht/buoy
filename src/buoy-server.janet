@@ -181,7 +181,8 @@
 					# allow for escape string (@@ escapes the entirety of its arg)
 					(set outarg 
 						(escape-string 
-							(if (= (string/slice arg 1 2) "@" ) 
+							#short circuit if we don't actually have a second character - the else case will handle the case of just @
+							(if (and (>= (length arg) 2) (= (string/slice arg 1 2) "@" ) )
 						
 								#escape the whole arg
 								 (string/slice arg 2 )
@@ -198,18 +199,27 @@
 										(set slashind (length arg))
 										(set secondhalf (string/slice arg slashind) )
 									)
+									#remove the @
 									(def buoyname (string/slice arg 1 slashind ) )
-									(if (get buoys buoyname) 
-										(string
-											# remove the @
-											(get buoys buoyname )
-											# rest of the arg if additional is given
-											secondhalf
-										)
-										(do
-											(set errorstatus true)
-											(set errorstring 
-												(string "echo \"buoy: No key @" buoyname " found in table \" >&2")
+									(if (empty? buoyname)
+										#if just @ with no name, we default ot home dir
+										(string (os/getenv "HOME" ) secondhalf )
+
+										#otherwise, derefernce the buoy 
+										(if (get buoys buoyname) 
+											(string
+												(get buoys buoyname )
+
+												# rest of the arg if additional is given
+												secondhalf
+											)
+
+											#if buoy name is specified but is not in table, return an error
+											(do
+												(set errorstatus true)
+												(set errorstring 
+													(string "echo \"buoy: No key @" buoyname " found in table \" >&2")
+												)
 											)
 										)
 									)
