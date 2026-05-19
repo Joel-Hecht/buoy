@@ -3,8 +3,9 @@ all: exe daemon wrapper
 
 .PHONY: exe
 exe: src/buoy-server.janet src/buoy-client.janet 
+	rm -rf build
 	jpm -l deps
-	jpm build
+	jpm -l build
 	mkdir -p "${HOME}/.buoy/bin"
 	sudo cp "build/buoy-client" "/usr/local/bin/"
 	sudo cp "build/buoy-server" "/usr/local/bin/"
