@@ -3,7 +3,7 @@ all: exe daemon wrapper
 
 .PHONY: exe
 exe: src/buoy-server.janet src/buoy-client.janet 
-	sudo jpm deps
+	jpm -l deps
 	jpm build
 	mkdir -p "${HOME}/.buoy/bin"
 	sudo cp "build/buoy-client" "/usr/local/bin/"
@@ -28,6 +28,9 @@ update: clean-save-data
 	git pull
 	@$(MAKE) all
 
+.PHONY: janet
+janet:
+	bash ./install-janet.sh
 
 # will not remove anything from bashrc
 .PHONY: clean
